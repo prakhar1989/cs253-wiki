@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset=UTF-8>
+	<meta name=viewport content="width=device-width, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Wiki - on - Udacity</title>
+    <link rel=stylesheet href="/stylesheets/blueprint.css">
+    <link rel=stylesheet href="/stylesheets/custom.css">
+</head>
+<body lang="en">
+<div class="container">
+    <div class="navbar">
+        <ul>
+            {% if not logged_in %}
+            <li><a href="/signup">Signup</a> | <a href="/login">Login</a></li>
+            <li><a href="#">history</a></li>
+            {% else %}
+            <li>{{ logged_in.username }}<a href="/logout"> (logout)</a></li>
+            <li><a href="/_edit{{ wiki_url }}">edit</a> | <a href="#">history</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    <div class="clear"></div>
+    <div class="main">
+        {% block body %} {% endblock %}
+    </div>
+</div>
+<script type="text/javascript" src="/js/jquery.js"></script>
+</body>
+</html>

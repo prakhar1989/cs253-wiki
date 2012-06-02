@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="span-12">
+        <form method="post">
+          <fieldset>
+            <p>
+              <label for="Content">Content</label><br>
+              <textarea name="content" rows="25" cols="20">{{ content }}</textarea>
+            </p>
+            <p>
+              <input type="submit" value="Save">
+            </p>
+
+          </fieldset>
+        </form>
+
+{% endblock %}

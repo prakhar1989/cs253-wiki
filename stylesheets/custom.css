@@ -1,0 +1,13 @@
+ul li {
+    list-style-type: none;
+    float: left;
+    margin-right: 10px;
+}
+
+#main{
+    margin-top: 50px;
+}
+
+.navbar {
+    float: right;
+}
