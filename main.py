@@ -153,17 +153,19 @@ class LogoutHandler(Handler):
         self.logout()
         self.redirect(uri_for("main"))
 
-### MODEL FOR WIKI
+### MODEL FOR WIKI ###
 class Wiki(db.Model):
     content = db.TextProperty(required = True)
     parent_page = db.StringProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
-    last_modified = db.DateTimeProperty(auto_now_add = True)
+    ver_count = db.IntegerProperty(required = True)
+
 
 class MainPage(Handler):
     def get(self):
         try:
-            w = Wiki.all().filter("parent_page =", "home").fetch(1)[0]
+            # w = Wiki.all().filter("parent_page =", "home").order("-created").fetch(1)[0]
+            w = Wiki.all().filter("parent_page =", "home").order("-created")[0]
             content = w.content
         except IndexError:
             content = ""
@@ -176,7 +178,7 @@ class EditPageHandler(Handler):
         if wiki_url == "/": #this construct looks horrific ; change
             wiki_url = "/home"
         try:
-            w = Wiki.all().filter("parent_page =", wiki_url[1:]).fetch(1)[0]
+            w = Wiki.all().filter("parent_page =", wiki_url[1:]).order("-created").fetch(1)[0]
             content = w.content
         except IndexError:
             content = ""
@@ -185,16 +187,19 @@ class EditPageHandler(Handler):
     def post(self, wiki_url):
         if self.user:
             content = self.request.get("content")
-            home_redirect = False
             if content:
+                home_redirect = False
                 if wiki_url == "/": #this construct looks horrific ; change
                     home_redirect = True
                     wiki_url = "/home"
                 try:
-                    w = Wiki.all().filter("parent_page =", wiki_url[1:]).fetch(1)[0]
-                    w.content = content
+                    wiki_list = Wiki.all().filter("parent_page =", wiki_url[1:])
+                    wikis = list(wiki_list)
+                    count = len(wikis) + 1
                 except IndexError:
-                    w = Wiki(content = content, parent_page = wiki_url[1:])
+                    count = 1
+
+                w = Wiki(content = content, parent_page = wiki_url[1:], ver_count = count)
                 w.put()
                 if home_redirect:
                     self.redirect('/')
@@ -205,13 +210,33 @@ class EditPageHandler(Handler):
 
 class ShowWikiHandler(Handler):
     def get(self, wiki_url):
+        ver_param = self.request.get("v")
+        if ver_param:
+            ver_count_requested = int(ver_param)
+        else:
+            ver_count_requested = 0
+        if wiki_url == "/": 
+            self.redirect(uri_for('main'))
         try:
-            if wiki_url == "/": 
-                self.redirect(uri_for('main'))
-            w = Wiki.all().filter("parent_page =", wiki_url[1:]).fetch(1)[0]
+            if ver_count_requested:
+                w = Wiki.all().filter("parent_page = ", wiki_url[1:]).filter("ver_count =", ver_count_requested)[0]
+            else:
+                w = Wiki.all().filter("parent_page =", wiki_url[1:]).order("-created")[0]
+
             self.render("show_page.html", content = w.content, wiki_url = wiki_url)
         except IndexError:
             self.redirect('/_edit' + wiki_url)
+
+
+class ShowHistoryHandler(Handler):
+    def get(self, wiki_url):
+        if wiki_url == "/":
+            parent_page = "home"
+        else:
+            parent_page = wiki_url[1:]
+        wikis = Wiki.all().filter("parent_page =", parent_page).order("-created")
+        self.render("show_history.html", wiki_url = wiki_url, wikis = wikis)
+
 
 PAGE_RE = r'(/(?:[a-zA-Z0-9_-]+/?)*)'
 app = webapp2.WSGIApplication([
@@ -220,5 +245,6 @@ app = webapp2.WSGIApplication([
                            webapp2.Route('/login', LoginHandler, name="signup"),
                            webapp2.Route('/logout', LogoutHandler, name="logout"),
                            ('/_edit' + PAGE_RE, EditPageHandler), # fix this to webapp2.Route
+                           ('/_history' + PAGE_RE, ShowHistoryHandler), # fix this to webapp2.Route
                            (PAGE_RE, ShowWikiHandler),
 ], debug = True)

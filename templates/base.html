@@ -16,7 +16,7 @@
             <li><a href="#">history</a></li>
             {% else %}
             <li>{{ logged_in.username }}<a href="/logout"> (logout)</a></li>
-            <li><a href="/_edit{{ wiki_url }}">edit</a> | <a href="#">history</a></li>
+            <li><a href="/_edit{{ wiki_url }}">edit</a> | <a href="/_history{{ wiki_url }}">history</a></li>
             {% endif %}
         </ul>
     </div>

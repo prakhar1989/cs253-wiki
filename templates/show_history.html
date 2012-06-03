@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block body %}
+<table id="one-column-emphasis" summary="2007 Major IT Companies' Profit">
+<col />
+<tbody>
+    {% for wiki in wikis %}
+    <tr>
+        <td>{{ wiki.created.strftime("%a, %d %b %Y %H:%M:%S") }}</td>
+        <td> {{ wiki.content[:100] }}</td>
+        <td><a href="{{wiki_url}}?v={{wiki.ver_count}}">View</a></td>
+        <td><a href="/_edit{{wiki_url}}">Edit</a></td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endblock %}
